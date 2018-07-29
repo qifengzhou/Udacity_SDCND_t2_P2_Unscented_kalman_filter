@@ -73,13 +73,6 @@ UKF::UKF() {
   // set vector for weights
   weights_ = VectorXd(2*n_aug_ + 1);
 
-  //define NIS lidar
-  NIS_laser_ = 0.0;
-
-  //define NIS lidar
-  NIS_radar_ = 0.0;
-
-
 }
 
 UKF::~UKF() {}
