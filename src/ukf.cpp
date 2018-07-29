@@ -199,13 +199,6 @@ void UKF::Prediction(double delta_t) {
   x_aug(5) = 0;
   x_aug(6) = 0;
 
-  //and the rest of sigma point matrix
-  for (int i = 0; i < n_x_; i++)
-  {
-      Xsig_aug.col(i+1)     = x_aug + sqrt(lambda_+n_aug_) * A.col(i);
-      Xsig_aug.col(i+1+n_x_) = x_aug - sqrt(lambda_+n_aug_) * A.col(i);
-   }
-
   //define spreading parameter
   lambda_ = 3 - n_aug_;
 
@@ -313,9 +306,6 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   You'll also need to calculate the lidar NIS.
   */
 
-  //store lidar measurement in vector
-  VectorXd z = meas_package.raw_measurements_;
-
   //define lidar data points
   int n_z = 2;
 
@@ -369,6 +359,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   // UKF update ****************************************************************
 
+  //create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x_, n_z);
 
   //calculate cross correlation matrix
@@ -394,7 +385,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
   MatrixXd K = Tc * S.inverse();
 
   //residual
-  VectorXd z_diff = z - z_pred;
+  VectorXd z_diff = meas_package.raw_measurements_ - z_pred;
 
   //angle normalization
   while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
@@ -424,10 +415,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   You'll also need to calculate the radar NIS.
   */
 
-  //store radar measurement in vector
-  VectorXd z = meas_package.raw_measurements_;
-
-  //define radar data points
+  //set measurement dimension, radar can measure r, phi, and r_dot
   int n_z = 3;
 
   //create matrix for sigma points in measurement space
@@ -436,7 +424,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   //mean predicted measurement
   VectorXd z_pred = VectorXd(n_z);
 
-  //measurement covariance matrix S
+  //measurement covariance matrix
   MatrixXd S = MatrixXd(n_z,n_z);
 
   //transform sigma points into measurement space
@@ -463,7 +451,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     z_pred = z_pred + weights_(i) * Zsig.col(i);
   }
 
-  //innovation covariance matrix S
+  //calculate cross correlation matrix
   S.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {
     //residual
@@ -510,7 +498,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   MatrixXd K = Tc * S.inverse();
 
   //residual
-  VectorXd z_diff = z - z_pred;
+  VectorXd z_diff = meas_package.raw_measurements_ - z_pred;
 
   //angle normalization
   while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
