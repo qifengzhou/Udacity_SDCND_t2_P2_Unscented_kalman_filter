@@ -110,21 +110,23 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
             */
             float rho = meas_package.raw_measurements_(0);
             float phi = meas_package.raw_measurements_(1);
+            float rho_dot = meas_package.raw_measurements_(2);
 
             //x coordinate
             float px = rho * cos(phi);
             //y coordinate
             float py = rho * sin(phi);
+            //x and y velocity
+            float vx = rho_dot * cos(phi);
+            float vy = rho_dot * sin(phi);
+            float v = sqrt(vx*vx + vy*vy);
 
-
-            x_ << px, py, 0, 0, 0;
+            x_ << px, py, v, 0, 0;
         } else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
             /**
             Initialize state.
             */
-            x_(0) = meas_package.raw_measurements_(0);
-            x_(1) = meas_package.raw_measurements_(1);
-
+            x_ << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1), 0, 0, 0;
         }
 
         time_us_ = meas_package.timestamp_;
