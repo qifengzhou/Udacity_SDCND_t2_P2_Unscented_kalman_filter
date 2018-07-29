@@ -181,15 +181,10 @@ void UKF::Prediction(double delta_t) {
   //create augmented state covariance
   MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
 
-  //create augmented sigma point matrix
+  //create sigma point matrix
   MatrixXd Xsig_aug = MatrixXd(n_aug_, 2*n_aug_ + 1);
 
-  //calculate square root of covariance matrix P
-  MatrixXd A = P_aug.llt().matrixL();
-
-  //set first column of sigma point matrix
-  Xsig_aug.col(0) = x_aug;
-
+  //create augmented mean state
   x_aug.head(5) = x_;
   x_aug(5) = 0;
   x_aug(6) = 0;
